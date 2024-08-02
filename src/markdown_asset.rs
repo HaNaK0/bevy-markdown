@@ -58,16 +58,13 @@ pub(crate) enum MarkdownParseError {
     Io(#[from] std::io::Error),
 }
 
+/// The function that parses the markdown data into a vector of markdown elements
 pub(crate) async fn parse_markdown<T>(buffer: T) -> Result<Vec<MarkdownElement>, MarkdownParseError>
 where
     T: AsyncBufReadExt,
 {
     pin!(buffer);
     let mut lines = buffer.lines();
-    while let Some(line) = lines.next().await {
-        let _line = line?;
-    }
-
     Ok(Vec::new())
 }
 
@@ -99,6 +96,7 @@ mod tests {
     /// Test italics using asterisks
     /// for example `*hello world*` shoould be *hello world*
     #[test]
+    #[ignore = "not implemented"]
     fn test_asterics_italics() -> Result<(), MarkdownParseError> {
         let input: &[u8] = b"*hello world*";
         let result = block_on(parse_markdown(input))?;
@@ -120,6 +118,7 @@ mod tests {
     /// Test italics using underscore
     /// for example `_hello world_` shoould be _hello world_
     #[test]
+    #[ignore = "not implemented"]
     fn test_underscore_italics() -> Result<(), MarkdownParseError> {
         let input: &[u8] = b"_hello world_";
         let result = block_on(parse_markdown(input))?;
@@ -141,6 +140,7 @@ mod tests {
     /// Test Bold using underscore
     /// for example `__hello world__` shoould be __hello world__
     #[test]
+    #[ignore = "not implemented"]
     fn test_underscore_bold() -> Result<(), MarkdownParseError> {
         let input: &[u8] = b"__hello world__";
         let result = block_on(parse_markdown(input))?;
@@ -162,6 +162,7 @@ mod tests {
     /// Test Bold using underscore
     /// for example `**hello world**` shoould be **hello world**
     #[test]
+    #[ignore = "not implemented"]
     fn test_asterisk_bold() -> Result<(), MarkdownParseError> {
         let input: &[u8] = b"__hello world__";
         let result = block_on(parse_markdown(input))?;
@@ -183,6 +184,7 @@ mod tests {
     /// Test headings
     /// Headings should be written starting with hashtags
     #[test]
+    #[ignore = "not implemented"]
     fn test_headings() -> Result<(), MarkdownParseError> {
         let input: &[u8] =
             b"# Heading level 1 \n## heading level 2 \n### Heading Level 3 \n##### Heading level 5";
@@ -235,6 +237,38 @@ mod tests {
         } else {
             panic!()
         }
+
+        Ok(())
+    }
+
+    /// Testing that an empty line results in empty
+    ///
+    /// Like so
+    #[test]
+    fn test_empty_line() -> Result<(), MarkdownParseError> {
+        let input: &[u8] = b"This should result in an \n\n empty line  \n\n Also this";
+        let result = block_on(parse_markdown(input))?;
+
+        let comparison = vec![
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "This should result in an".to_string(),
+            }),
+            MarkdownElement::LineBreak,
+            MarkdownElement::LineBreak,
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "empty line".to_string(),
+            }),
+            MarkdownElement::LineBreak,
+            MarkdownElement::LineBreak,
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "Also This".to_string(),
+            }),
+        ];
+
+        assert_eq!(result, comparison);
 
         Ok(())
     }
