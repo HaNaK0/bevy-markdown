@@ -1,3 +1,5 @@
+use std::{collections::btree_set::Range, process::Output};
+
 use bevy::{
     asset::{Asset, Handle},
     reflect::TypePath,
@@ -65,7 +67,53 @@ where
 {
     pin!(buffer);
     let mut lines = buffer.lines();
-    Ok(Vec::new())
+
+    let mut output = Vec::new();
+    while let Some(line) = lines.next().await {
+        let line = line?;
+
+        if !line.is_empty() {
+            output = parse_text(&line, output)?;
+        } else {
+            output = parse_empty_line(&line, output)?;
+        }
+    }
+    Ok(output)
+}
+
+fn parse_text(
+    line: &str,
+    mut output: Vec<MarkdownElement>,
+) -> Result<Vec<MarkdownElement>, MarkdownParseError> {
+    if line != "" {
+        output.push(MarkdownElement::Text(MarkdownText {
+            style: MarkdownTextStyle::Standard,
+            text: line.trim().to_string(),
+        }))
+    }
+
+    if line.ends_with("  ") {
+        output.push(MarkdownElement::LineBreak)
+    }
+
+    Ok(output)
+}
+
+fn parse_empty_line(
+    _line: &str,
+    mut output: Vec<MarkdownElement>,
+) -> Result<Vec<MarkdownElement>, MarkdownParseError> {
+    let line_breaks = output
+        .iter()
+        .rev()
+        .take(2)
+        .take_while(|e| e == &&MarkdownElement::LineBreak)
+        .count();
+
+    for _ in 0..(2 - line_breaks) {
+        output.push(MarkdownElement::LineBreak)
+    }
+    Ok(output)
 }
 
 #[cfg(test)]
@@ -79,7 +127,7 @@ mod tests {
         let input: &[u8] = b"hello world";
         let result = block_on(parse_markdown(input))?;
 
-        assert_eq!(result.len(), 2);
+        assert_eq!(result.len(), 1, "should contain 1 element");
 
         let result = result.first().unwrap();
 
@@ -220,23 +268,27 @@ mod tests {
         let input: &[u8] = b"First line  \nSecond line \nThird Line\nFourth Line";
         let result = block_on(parse_markdown(input))?;
 
-        assert_eq!(result.len(), 3);
+        let comparison = vec![
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "First line".to_string(),
+            }),
+            MarkdownElement::LineBreak,
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "Second line".to_string(),
+            }),
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "Third Line".to_string(),
+            }),
+            MarkdownElement::Text(MarkdownText {
+                style: MarkdownTextStyle::Standard,
+                text: "Fourth Line".to_string(),
+            }),
+        ];
 
-        if let MarkdownElement::Text(text) = result.get(0).unwrap() {
-            assert_eq!("First Line", text.text);
-            assert_eq!(text.style, MarkdownTextStyle::Standard);
-        } else {
-            panic!()
-        }
-
-        assert_eq!(MarkdownElement::LineBreak, *result.get(1).unwrap());
-
-        if let MarkdownElement::Text(text) = result.get(2).unwrap() {
-            assert_eq!("Second Line Third Line Fourth Line", text.text);
-            assert_eq!(text.style, MarkdownTextStyle::Standard);
-        } else {
-            panic!()
-        }
+        assert_eq!(result, comparison);
 
         Ok(())
     }
@@ -264,7 +316,7 @@ mod tests {
             MarkdownElement::LineBreak,
             MarkdownElement::Text(MarkdownText {
                 style: MarkdownTextStyle::Standard,
-                text: "Also This".to_string(),
+                text: "Also this".to_string(),
             }),
         ];
 
