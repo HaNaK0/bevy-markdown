@@ -60,7 +60,7 @@ pub(crate) enum MarkdownParseError {
     Io(#[from] std::io::Error),
 }
 
-/// The function that parses the markdown data into a vector of markdown elements
+/// Entry point for the parsing of the markdown text
 pub(crate) async fn parse_markdown<T>(buffer: T) -> Result<Vec<MarkdownElement>, MarkdownParseError>
 where
     T: AsyncBufReadExt,
@@ -81,6 +81,7 @@ where
     Ok(output)
 }
 
+/// Parses a text line
 fn parse_text(
     line: &str,
     mut output: Vec<MarkdownElement>,
@@ -99,6 +100,7 @@ fn parse_text(
     Ok(output)
 }
 
+/// Parse an empty line and add correct line breaks
 fn parse_empty_line(
     _line: &str,
     mut output: Vec<MarkdownElement>,
