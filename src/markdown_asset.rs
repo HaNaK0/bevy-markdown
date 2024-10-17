@@ -1,5 +1,3 @@
-use std::{collections::btree_set::Range, process::Output};
-
 use bevy::{
     asset::{Asset, Handle},
     reflect::TypePath,
@@ -13,6 +11,7 @@ use crate::markdown_style::MarkdownStyle;
 /// The level of a heading set with ammount of `#`
 type HeadingLevel = u16;
 
+/// A struct representing a pice of markdown text
 #[derive(Debug, PartialEq, Eq)]
 pub enum MarkdownElement {
     Text(MarkdownText),
@@ -28,14 +27,16 @@ pub enum MarkdownElement {
     LineBreak,
 }
 
+/// A representation for a piece of text parsed from markdown
 #[derive(Debug, PartialEq, Eq)]
 pub struct MarkdownText {
-    style: MarkdownTextStyle,
-    text: String,
+    pub style: MarkdownTextStyle,
+    pub text: String,
 }
 
+/// Represents the style of a markdown text
 #[derive(Debug, PartialEq, Eq)]
-enum MarkdownTextStyle {
+pub enum MarkdownTextStyle {
     Standard,
     Bold,
     Italic,
@@ -46,15 +47,17 @@ enum MarkdownTextStyle {
     Code,
 }
 
+/// The markdown asset that stores parsed markdown data
 #[derive(Asset, TypePath)]
 pub struct Markdown {
-    content: Vec<MarkdownElement>,
-    style: MarkdownStyle,
+    pub content: Vec<MarkdownElement>,
+    pub style: Handle<MarkdownStyle>,
 }
 
+/// Error returned from parsing markdown
 #[non_exhaustive]
 #[derive(Debug, Error)]
-pub(crate) enum MarkdownParseError {
+pub enum MarkdownParseError {
     /// An [IO](std::io) Error
     #[error("Failed reading line: {0}")]
     Io(#[from] std::io::Error),
