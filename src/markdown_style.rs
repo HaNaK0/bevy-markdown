@@ -1,8 +1,8 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use bevy::{
     asset::{Asset, AssetLoader, AsyncReadExt, Handle},
-    color::{palettes::css::WHITE, Color},
+    color::Color,
     reflect::TypePath,
     text::{Font, TextStyle},
 };

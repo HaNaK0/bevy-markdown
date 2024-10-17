@@ -1,15 +1,10 @@
 use bevy::{
     app::{Plugin, Update},
     asset::{AssetApp, AssetEvent, AssetServer, Assets, Handle},
-    color::palettes::css::BLACK,
-    log::{debug, error, warn},
-    prelude::{
-        Added, BuildChildren, Bundle, ChildBuilder, Children, Commands, Component, Entity,
-        EventReader, NodeBundle, Query, Ref, Res, TextBundle, Trigger,
-    },
+    log::{debug, error},
+    prelude::*,
     text::{BreakLineOn, Text, TextSection, TextStyle},
-    ui::{Node, Style},
-    utils::HashSet,
+    ui::Node,
 };
 use markdown_asset::Markdown;
 use markdown_loader::MarkdownLoader;
