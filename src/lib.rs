@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
     text::{BreakLineOn, Text, TextSection, TextStyle},
     ui::Node,
+    utils::HashSet,
 };
 use markdown_asset::Markdown;
 use markdown_loader::MarkdownLoader;
@@ -22,8 +23,7 @@ impl Plugin for MarkdownPlugin {
             .init_asset::<MarkdownStyle>()
             .init_asset_loader::<MarkdownLoader>()
             .init_asset_loader::<MarkdownStyleLoader>()
-            .observe(on_load)
-            .add_systems(Update, on_add);
+            .add_systems(Update, (on_add, on_asset_event));
     }
 }
 
@@ -37,26 +37,29 @@ pub struct MarkdownNodeBundle {
 #[derive(Component, Default)]
 pub struct MarkdownComponent;
 
-fn on_load(
-    trigger: Trigger<AssetEvent<Markdown>>,
+fn on_asset_event(
     mut commands: Commands,
     markdown_assets: Res<Assets<Markdown>>,
     markdown_styles: Res<Assets<MarkdownStyle>>,
-    //mut load_events: EventReader<AssetEvent<Markdown>>,
+    mut load_events: EventReader<AssetEvent<Markdown>>,
     nodes: Query<(Entity, &Handle<Markdown>, &Node)>,
 ) {
-    let loaded_assset = if let AssetEvent::LoadedWithDependencies { id } = trigger.event() {
-        id
-    } else {
-        return;
-    };
-
-    debug!("Load event triggered on {:?}", trigger.entity());
+    let loaded_assets: HashSet<AssetId<Markdown>> = load_events
+        .read()
+        .filter_map(|e| {
+            if let AssetEvent::LoadedWithDependencies { id } = e {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
 
     for (entity, asset, _node) in nodes
         .iter()
-        .filter(|(_, asset, _)| asset.id() == *loaded_assset)
+        .filter(|(_, asset, _)| loaded_assets.contains(&asset.id()))
     {
+        debug!("markdown loaded for entity {:?}", entity);
         let markdown = if let Some(markdonw) = markdown_assets.get(asset) {
             markdonw
         } else {
@@ -85,6 +88,7 @@ fn on_add(
     query: Query<(Entity, &Handle<Markdown>), Added<MarkdownComponent>>,
 ) {
     for (entity, markdown) in &query {
+        debug!("on add triggered");
         if asset_server.is_loaded_with_dependencies(markdown) {
             let markdown = if let Some(markdonw) = markdown_assets.get(markdown) {
                 markdonw
@@ -100,6 +104,7 @@ fn on_add(
                 return;
             };
 
+            debug!("markdown built when markdown was added");
             commands
                 .entity(entity)
                 .with_children(|c| build_markdown(c, markdown, style));
