@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use bevy::{
     asset::{Asset, AssetLoader, AsyncReadExt, Handle},
     color::Color,
+    log::debug,
     reflect::TypePath,
     text::{Font, TextStyle},
 };
@@ -57,6 +58,8 @@ impl AssetLoader for MarkdownStyleLoader {
         let ron_data = de::from_bytes::<StyleRon>(&bytes)?;
 
         let font = load_context.load(ron_data.font);
+
+        debug!("Markdown style loaded");
 
         Ok(MarkdownStyle {
             font,
