@@ -1,3 +1,63 @@
+//! A crate that enables loading markdown for use in bevy game UIs
+//!
+//! This crate adds assets and components that can be used to text formatted with markdown and
+//! that then is turned into bevys UI nodes which how the markdown text is displayed in game.
+//!
+//! # under development
+//! This plugin is under development and therefore all markdown features are not implemented yet.
+//! Here follows a list features and which are implemented
+//! ## Basic syntax
+//! - [ ] Heading
+//! - [ ] Bold
+//! - [ ] Italic
+//! - [ ] Blockquote
+//! - [ ] Ordered List
+//! - [ ] Unordered List
+//! - [ ] Code
+//! - [ ] Horizontal Rule
+//! - [ ] Link
+//! - [ ] Image
+//!
+//! ## Advanced syntax
+//! - [ ] Table
+//! - [ ] Fenced Code Block
+//! - [ ] Footnote
+//! - [ ] Heading ID
+//! - [ ] Definition List
+//! - [ ] Strikethrough
+//! - [ ] Task List
+//! - [ ] Emoji
+//! - [ ] Highlight
+//! - [ ] Subscript
+//! - [ ] Superscript
+//!
+//! # How to use
+//! To use this crate you just add the [MarkdownPlugin] to your bevy app
+//! and then add a [MarkdownNodeBundle] which contains a [Markdown] asset to an entity.
+//! The markdown asset is loaded like any other asset in bevy except that it requires a meta file for each markdown
+//! file because thas where the link to the style file for the bevy asset is linked.
+//!
+//! A style file is a ron file that contains information about color font an fontsize and could look like this
+//! ```ron
+//! (
+//!     font: "fonts\\Ubuntu\\Ubuntu-Regular.ttf",
+//!     body_size: 12.0,
+//!     body_color: Srgba((red: 1.0,green: 1.0,blue: 1.0,alpha: 1.0))
+//! )
+//! ```
+//! The style is then linked to a markdown document by adding it to the meta file.
+//! ```ron
+//! (
+//! meta_format_version: "1.0",
+//! asset : Load (
+//!     loader : "hana_bevy_markdown::markdown_loader::MarkdownLoader",
+//!     settings : (
+//!         style: "Pages/Home/style.ron"
+//!     ),
+//! ),
+//! )
+//! ```
+//! Above is an example of a meta file and you need to replace the style with a path to the style file you want to use
 use bevy::{
     app::{Plugin, Update},
     asset::{AssetApp, AssetEvent, AssetServer, Assets, Handle},
@@ -15,6 +75,7 @@ pub mod markdown_asset;
 pub mod markdown_loader;
 pub mod markdown_style;
 
+/// The pugin that enables loading from markdown
 pub struct MarkdownPlugin;
 
 impl Plugin for MarkdownPlugin {
@@ -27,6 +88,9 @@ impl Plugin for MarkdownPlugin {
     }
 }
 
+/// The markdown node bundle that adds markdown to a UI
+///
+/// Contains a [Markdown] asset, a [MarkdownComponent] and a [NodeBundle]
 #[derive(Bundle, Default)]
 pub struct MarkdownNodeBundle {
     pub markdown: MarkdownComponent,
@@ -34,6 +98,7 @@ pub struct MarkdownNodeBundle {
     pub node: NodeBundle,
 }
 
+/// A component that marks the root of the markdown text
 #[derive(Component, Default)]
 pub struct MarkdownComponent;
 

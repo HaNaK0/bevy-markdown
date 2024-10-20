@@ -1,3 +1,21 @@
+//! The asset that stores the data from the markdown file.
+//!
+//! Every markdown file loaded is first parsed into a markdown asset that can either be used
+//! or added to UI with the help by adding a a [MarkdownNodeBundle](crate::MarkdownNodeBundle).
+//! All markdown files that is loaded need a asset meta file, it has the same name as the file
+//! but with the `.meta` file ending.
+//! For example the file `foo.md` would have the meta file `hey.md.meta` which could look like this
+//! ```ron
+//! (
+//! meta_format_version: "1.0",
+//! asset : Load (
+//!     loader : "hana_bevy_markdown::markdown_loader::MarkdownLoader",
+//!     settings : (
+//!         style: "Pages/Home/style.ron"
+//!     ),
+//! ),
+//! )
+//! ```
 use bevy::{
     asset::{Asset, Handle},
     reflect::TypePath,

@@ -1,3 +1,17 @@
+//! The fonts and sizes for the text rendered from you markdown is described in a markdown style file
+//!
+//! A markdown style file is ron file where sizes and fonts are defined for the rendered markdown.
+//! The content might looks as follows
+//! ```ron
+//! (
+//!     font: "fonts\\Ubuntu\\Ubuntu-Regular.ttf",
+//!     body_size: 12.0,
+//!     body_color: Srgba((red: 1.0,green: 1.0,blue: 1.0,alpha: 1.0))
+//! )
+//! ```
+//! Where font is a path to a compatible font which will be loaded into the engine as a font asset.
+//! body_size is the size of the font for normal body text.
+//! body_colour is the size for body text.
 use std::path::PathBuf;
 
 use bevy::{
@@ -21,6 +35,7 @@ pub struct MarkdownStyle {
     pub text_color: Color,
 }
 
+/// The desirialized style data
 #[derive(Debug, Deserialize, Serialize)]
 struct StyleRon {
     font: PathBuf,
@@ -39,6 +54,7 @@ pub enum MarkdownStyleError {
     Ron(#[from] ron::error::SpannedError),
 }
 
+/// The asset loader for a markdown style document
 #[derive(Default)]
 pub struct MarkdownStyleLoader {}
 
